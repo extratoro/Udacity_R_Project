@@ -1,0 +1,8 @@
+http://docs.ggplot2.org/current/geom_line.html
+http://docs.ggplot2.org/current/stat_smooth.html
+http://docs.ggplot2.org/current/stat_summary.html
+http://docs.ggplot2.org/current/scale_brewer.html
+http://daringfireball.net/projects/markdown/syntax#html
+http://stackoverflow.com/questions/12197437/ggplot2-facet-grid-arrange-panels
+http://stackoverflow.com/questions/16062420/ggplot-2-combining-free-and-fixed-scales-among-facet-wrap-panels
+http://rmarkdown.rstudio.com/authoring_basics.html
