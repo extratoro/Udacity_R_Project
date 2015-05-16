@@ -1,12 +1,10 @@
 ---
-title: "Project_Red_Wines V2"
+title: "Project_Red_Wines"
 author: "LLT"
-date: "Wednesday, May 6, 2015"
+date: "Saturday, May 16, 2015"
 output: html_document
 ---
 #Analysis
-##Preparations
-First of all, let's load the data into a dataframe and all necessary libraries
 
 ```{r,echo=FALSE,warning=FALSE}
 red_wines<-read.csv('wineQualityReds.csv', header = TRUE, sep = ',', 
@@ -20,13 +18,30 @@ library(GGally)
 
 ##First look
 
-```{r}
+We have the following variables:
+
+```{r, echo=FALSE, warning=FALSE}
 names(red_wines)
+```
+
+We have 12 variables.
+And their types:
+
+```{r, echo=FALSE, warning=FALSE}
 str(red_wines)
+```
+
+All of them are numeric. 1599 data points.
+
+A first overlook at the data.
+
+```{r, echo=FALSE, warning=FALSE}
 summary(red_wines)
 ```
 
-We have 12 numeric variables. The summary shows max really far out for residual.sugar, chlorides, free.sulfur, density... Those might be outlier/reporting problem or really special wines.
+The summary shows max really far out for residual.sugar, chlorides, free.sulfur, density... Those might be outlier/reporting problem or really special wines.
+
+***
 
 ###Quality
 First of all, what about quality of those red wines
@@ -36,22 +51,147 @@ Also, quality is a numeric, we will add it as a factor.
 red_wines$quality.lvl=cut(red_wines$quality, 
                           c(0,1,2,3,4,5,6,7,8,9,10), 
                           labels = c(1,2,3,4,5,6,7,8,9,10))
-#now going with a boxplot
+
 ggplot(aes(x = quality.lvl), data = red_wines) +
   geom_bar() +
   scale_x_discrete()
 ```
 
 It looks like a normal distribution. Notes are out of 10. Most of the wines are around 5/6.
-My main line of inquiries will be the relation between all variables to quality.
-Looking at alcohol:
+
+***
+
+###Alcohol
 
 ```{r,echo=FALSE,warning=FALSE}
 ggplot(aes(x = alcohol), data = red_wines) +
   geom_bar(binwidth = 0.1, position = 'identity')
 ```
 
-Much more disparate but we have a nice peak around 9.5
+Much more disparate but we have a nice peak around 9.5% by volume. All in all it still looks like a normal distribution.
+
+***
+
+###Residual Sugar
+
+Residual sugar is the amount of sugar remaining after fermentation.
+
+```{r,echo=FALSE,warning=FALSE}
+ggplot(aes(x = residual.sugar), data = red_wines) +
+  geom_bar(binwidth = 0.03, position = 'identity')+
+  scale_x_log10(breaks = 1:16)
+```
+
+X scale is in log10. We have the same type of distribution but a long tail. Peaks is around 2.5g / dm^3 and data seems to go all the way up until 15g / dm^3. Let's look  at the summary.
+
+```{r,echo=FALSE,warning=FALSE}
+summary(red_wines$residual.sugar)
+```
+
+Max is at 15  while  the 3rd  quartile  is at 2.6 and the median at 2.2. So those are quite special wines or there is some error in the data.
+
+***
+
+###Chlorides
+
+Chlorides is salt. I woud consider not a great taste in wine.
+
+```{r,echo=FALSE,warning=FALSE}
+ggplot(aes(x = chlorides), data = red_wines) +
+  geom_bar(binwidth = 0.01, position = 'identity')+
+  scale_x_continuous(trans = 'log10')
+```
+
+We have a normal distribution once the x axis is transformed using a log10 function. Like residual.sugar, we have a longtail of data.
+
+```{r,echo=FALSE,warning=FALSE}
+summary(red_wines$chlorides)
+```
+
+The unit is the same as the residual.sugar  but the number are way lower. Median is at 0.079g / dm^3. The max is  more than 7 time higher.
+
+***
+###Citric acid
+
+In small quantities, citric acid can add freshness and pops to wine.
+
+```{r,echo=FALSE,warning=FALSE}
+ggplot(aes(x = citric.acid), data = red_wines) +
+  geom_bar(binwidth = 0.03, position = 'identity') +
+  scale_x_continuous(trans = 'log10')
+```
+
+Looking at citric.acid with a log10 scale, we have again a normal distribution. 
+
+```{r,echo=FALSE,warning=FALSE}
+summary(red_wines$citric.acid)
+```
+
+Once again we have a median at  0.26 g/dm^3 whereas the max is at 1 and the min is at 0.
+
+***
+###pH
+
+pH scale from 0 (very acid) to 14 (very basic). Most wines are between 3 and 4.
+
+```{r,echo=FALSE,warning=FALSE}
+ggplot(aes(x = pH), data = red_wines) +
+  geom_bar(binwidth = 0.01, position = 'identity')
+```
+
+The pH is normally distributed with a peak without the need for a log scale. We can see that the data is quite disperse but that as the description says, most of the data points are between 3 and 4.
+
+
+```{r,echo=FALSE,warning=FALSE}
+summary(red_wines$pH)
+```
+
+The min and max are once again quite far apart from the median and the 1st and 3rd quartiles respectively. 
+
+***
+###Volatile acidity
+
+Volatile acidity is the amoutn acetic acid in wine. At high concentration it gives an unpleasant vinegar taste which, I think, is what a low quality wine taste like.
+
+```{r,echo=FALSE,warning=FALSE}
+ggplot(aes(x = volatile.acidity), data = red_wines) +
+  geom_bar(binwidth = 0.01, position = 'identity')
+```
+
+Still a long tail in the data with a peak around 0.6 g / dm^3 of acetic acid.
+
+```{r,echo=FALSE,warning=FALSE}
+summary(red_wines$volatile.acidity)
+```
+
+The max is really out of range of the other data points. Median is at 0.52 g / dm^3 of acetic acid and the mean is quite similar ar 0.5278 g / dm^3 of acetic acid.
+
+***
+###Total Sulfur Dioxide
+
+Total sulfur dioxide is the sum of free (to oxidation of wine) and bound forms of sulfur. At high concentration is can influence taste.
+
+```{r,echo=FALSE,warning=FALSE}
+ggplot(aes(x = total.sulfur.dioxide), data = red_wines) +
+  geom_bar(binwidth = 0.03, position = 'identity') +
+  scale_x_continuous(trans = 'log10')
+```
+
+The x axis is transformed using log10. We have several bumps but overall a normal distribution. Some data points seem to be isolated. Let's look at the variable summary.
+
+```{r,echo=FALSE,warning=FALSE}
+summary(red_wines$total.sulfur.dioxide)
+```
+
+The max is really too high compared to the median and the 3rd quartile. It is an error in data reporting/recording I think.
+
+My main line of inquiries will be the relation between all variables to quality.
+
+***
+##Bivariate  analysis
+
+###Alcohol and quality
+
 Does alcohol level affects  the quality?
 
 ```{r,echo=FALSE,warning=FALSE}
@@ -59,12 +199,12 @@ ggplot(aes(x = quality.lvl, y = alcohol), data = red_wines) +
   geom_boxplot(outlier.colour= 'red') +
   ggtitle("Alcohol by quality")
 
-#correlation calculation
 cor(red_wines$alcohol, red_wines$quality)
 ```
 
-There is a medium correlation between quality and alcohol, the graph shows that the higher the quality, the higher the alcohol. This is especially true for the higher end wines.
+There is a medium correlation (around 0.48) between quality and alcohol, the graph shows that the higher the quality, the higher the alcohol. This is especially true for the higher end wines.
 
+***
 ###Acidity variables
 We have 3 types of acidity listed: 
 
@@ -74,33 +214,25 @@ We have 3 types of acidity listed:
 
 They should all relate to the ph I think. 
 
-```{r}
-#fixed pH and fixed acidity correlation
+```{r,echo=FALSE,warning=FALSE}
 cor(red_wines$pH, red_wines$fixed.acidity)
 
-#fixed pH and volatile acidity correlation
 cor(red_wines$pH, red_wines$volatile.acidity)
 
-#fixed pH and citric acid correlation
 cor(red_wines$pH, red_wines$citric.acid)
-
 ```
 
-So Fixed acidity and citric acid correlate quite strongly with the pH, but not the volatile acidity.
+So Fixed acidity and citric acid correlate quite strongly with the pH (around -0.68 and -0.54 respectively), but not the volatile acidity (around 0.23).
 
 ```{r,echo=FALSE,warning=FALSE}
-ggplot(aes(x = pH, y = volatile.acidity), data = red_wines) +
-  geom_point() +
-  ggtitle("Volatile acidity by pH")
-
-#modifying alpha for overplotting
 ggplot(aes(x = pH, y = volatile.acidity), data = red_wines) +
   geom_jitter(alpha = 0.3) +
   ggtitle("Volatile acidity by pH")
 ```
 
-Volatile acidity and pH are not related. Even for high quality wines, the pH seems to vary greatly. 
+Volatile acidity and pH are not related. Even for high quality wines, the pH seems to vary greatly. This confirms the low correlation previously found.
 
+***
 ###Quality and pH
 Let's get a closer look between those pH and quality now.
 
@@ -112,18 +244,25 @@ ggplot(aes(x = quality.lvl, y = pH), data = red_wines) +
 ```
 
 The higher the quality, the lower the pH it seems.
-What about salt?
-
-###Quality and chlorides
 
 ```{r,echo=FALSE,warning=FALSE}
-ggplot(aes(x = quality.lvl, y = chlorides), data = red_wines) +
-  geom_boxplot(outlier.colour = 'red') +
-  ggtitle("Chlorides by quality")
+cor(red_wines$pH, red_wines$quality)
+```
+
+The correlation coefficient between the two is very low at -0.06. So the first impression of the plot is not validated by the number in fact.
+
+What about salt?
+
+***
+###Quality and chlorides
+
+As a reminder, the chlorides summary.
+
+```{r,echo=FALSE,warning=FALSE}
 summary(red_wines$chlorides)
 ```
 
-Outliers are colored in red in the plot. The summary shows that the max is at 0.611 whereas the 3rd quartile is at 0.09. Lets zoom in to have  a better view.
+The summary shows that the max is at 0.611 whereas the 3rd quartile is at 0.09. Lets zoom in to have  a better view.
 
 ```{r,echo=FALSE,warning=FALSE}
 #coloring outlier and limiting the y scale to have a better look
@@ -135,18 +274,20 @@ ggplot(aes(x = quality.lvl, y = chlorides), data = red_wines) +
   ggtitle("Chlorides by quality, red outliers")
 ```
 
-The second plot is limited between the 0.05 and the 0.95 quantiles. There is some overlaps, but the higher the quality, the least salt.
+The plot is limited between the 0.05 and the 0.95 quantiles. There is some overlaps, but the higher the quality, the least salt.
 
-```{r,warning=FALSE}
+```{r,echo=FALSE,warning=FALSE}
 cor(red_wines$quality,red_wines$chlorides)
 ```
 
-Last variable on the obvious affecting taste (and so quality) I think is sugar
+The correlation is very low at -0.13. So the relationship between the two variables is ot very strong.
 
+Last variable on the obvious affecting taste (and so quality), I think, is sugar.
+
+***
 ###Quality and residual sugar
 
 ```{r,echo=FALSE,warning=FALSE}
-#first plot with alpha for overplotting
 ggplot(aes(x = quality.lvl, y = residual.sugar), data = red_wines) +
   geom_jitter(alpha = 0.4) +
   scale_y_log10() +
@@ -161,27 +302,51 @@ ggplot(aes(x = quality.lvl, y = residual.sugar), data = red_wines) +
   ggtitle("Residual sugar by quality (0.05 to 0.95 quant")
 ```
 
-No clear relationship between the sugar and quality.
+No clear relationship between the sugar and quality. The scatterplot shows points all over the place. As for the boxplot, the median and quartiles do not vary depending of quality.
 
-```{r,warning=FALSE}
+
+```{r,echo=FALSE,warning=FALSE}
 cor(red_wines$quality,red_wines$residual.sugar)
 ````
 
-Correlation confirms that there is no relationships.
+Correlation confirms that there is no relationships (0.01).
 
-##Getting a taste
+***
+##Multivariate analysis
+
 Let's try multi-variables plots to see if we can have a better picture.
 
 ```{r,echo=FALSE,warning=FALSE, fig.width=20, fig.height=20}
-#ggpairs to see the relationships of all variables by pairs
-ggpairs(red_wines)
+#new dataframe to have clear label on the plot
+wines_ggpairs=red_wines
+colnames(wines_ggpairs)<-c("Fixed.Acid", "Volatile.Acid", "Citric.acid", 
+                           "Sugar", "Salt", "Free.Sulfur", "Total.Sulfur", 
+                           "Density", "pH", "Sulphates", "Alcohol", 
+                           "Quality", "Quality.lvl")
+ggpairs(wines_ggpairs, params=list(corSize=15)) +
+  theme(axis.text = element_blank(), axis.title=element_text(size=12))
 ```
 
+Regarding quality, we can see some correlation with:
+
+* Alcohol (0.476)
+* Volatile acidity (-0.391)
+
+As for our  quality level we have some nice stepping with:
+
+* Alcohol
+* pH
+* Citric acid
+* Volatile acidity
+
+As the correlation is not very high with some of those variables, we  will analyse them afterwards.
+
+I want for the time being have a closer look at chlorides.
+
+***
 ###Chlorides and alcohol by quality
 
 ```{r,echo=FALSE,warning=FALSE}
-#Fist will be alcohol and chlorides, facetted by quality. 
-#A smoother was added to see the overall trend.
 ggplot_base_alcohol.quality<-ggplot(aes(x = alcohol), data = red_wines) +
   facet_wrap(~quality.lvl, scales = 'free_y')
   
@@ -195,15 +360,22 @@ ggplot_base_alcohol.quality +
 The overall trend is downward: less chlorides as the alcohol level gets higher. 
 But we can see that for the top 2 qualities, we got a rebound around 12° where salt level rises a bit. It might be some outlier as we only got a few points for those quality.
 
-```{r,warning=FALSE}
+```{r,echo=FALSE,warning=FALSE}
 with(subset(red_wines, quality.lvl==5),cor(chlorides,alcohol))
 with(subset(red_wines, quality.lvl==6),cor(chlorides,alcohol))
 with(subset(red_wines, quality.lvl==8),cor(chlorides,alcohol))
 
 ```
 
-Low correlation between alcohol and chlorides.
+The correlation between chlorides and alcohol are:
 
+* -0.184 for quality 5
+* -0.209 for quality 6
+* -0.171 for quality 8
+
+Correlations are not really strong and quite constant between the different qualities.
+
+***
 ###Residual sugar and alcohol by quality
 Let's look at the same thing with sugar:
 
@@ -215,19 +387,28 @@ ggplot_base_alcohol.quality +
 
 ```
 
-```{r,warning=FALSE}
+```{r,echo=FALSE,warning=FALSE}
 with(subset(red_wines, quality.lvl==5),cor(residual.sugar,alcohol))
 with(subset(red_wines, quality.lvl==6),cor(residual.sugar,alcohol))
 with(subset(red_wines, quality.lvl==8),cor(residual.sugar,alcohol))
 
 ```
 
-Same as for chlorides, the correlation is quite low. But the trends in the plots for chlorides and residual.sugar look kind of the same. Chlorides and residual sugar might be linked.
+The correlations are really low:
 
+* 0.054 for quality 5
+* -0.026 for quality 6
+* 0.225 for quality 8
+
+The much higher correlation for quality 8 is kind of interesting but we only have a few data points fior this quyality so the correlation might be due to that.
+
+The trends in the plots for chlorides and residual.sugar look kind of the same. Chlorides and residual sugar might be linked.
+
+***
 ###Chlorides and residual sugar by quality
 
 ```{r,echo=FALSE,warning=FALSE}
-ggplot(aes(x = chlorides, y = residual.sugar), data = red_wines_quant) +
+ggplot(aes(x = chlorides, y = residual.sugar), data = red_wines) +
   geom_jitter(alpha=0.4) +
   geom_smooth(color=I('red')) +
   xlim(quantile(red_wines$chlorides,0.05), 
@@ -257,18 +438,17 @@ ggplot(aes(x = quality, y = residual.sugar_chlorides), data = red_wines) +
 
 No chance here. I was hoping for some clusters of points for each quality level, but they can vary widely.
 
-```{r,warning=FALSE}
-
+```{r,echo=FALSE,warning=FALSE}
 with(subset(red_wines, quality.lvl==5),cor(residual.sugar,chlorides))
 with(subset(red_wines, quality.lvl==6),cor(residual.sugar,chlorides))
 with(subset(red_wines, quality.lvl==8),cor(residual.sugar,chlorides))
 
 ```
 
-The correlation for quality 5 and 6 is quite low but the one for 8 is much higher. This might be because we have fewer point on the 8 quality than on other quality level. Furthermore, we have very far off values in both residual.sugar and chlorides, let's calculate the same value on a subset limited between the .05 and .95 quantiles.
+The correlation for quality 5 and 6 is quite low (0.031 and 0.110 respectively) but the one for 8 is much higher. This might be because we have fewer point on the 8 quality than on other quality level. Furthermore, we have very far off values in both residual.sugar and chlorides, let's calculate the same value on a subset limited between the .05 and .95 quantiles.
 
 
-```{r,warning=FALSE}
+```{r,echo=FALSE,warning=FALSE}
 red_wines_quant<-subset(red_wines,
                         quantile(red_wines$residual.sugar,0.05)<=residual.sugar
                         & quantile(red_wines$residual.sugar,0.95)>=residual.sugar
@@ -284,31 +464,34 @@ with(subset(red_wines_quant, quality.lvl==8),
 
 ```
 
-Correlations are much improved with the removing of the extreme quantiles.
+Correlations are much improved with the removing of the extreme quantiles:
+
+* 0.147 for quality 5
+* 0.224 for quality 6
+* 0.420 for quality 8
+
 I think this relationship between residual sugar and chlorides is worth investigating to see if other variables might come in play.
 So let's map chlorides with sugar and add alcohol as a color and use this as a base for other graphs.
+
+***
 
 ###Chlorides, residual sugar and alcohol by quality
 
 ```{r,echo=FALSE,warning=FALSE}
-#moving to log scale for better view and adding smoother
-
 sugar.chlorides<-ggplot(aes(x = residual.sugar, y = chlorides), 
                         data = red_wines_quant) +
-  facet_wrap(~quality.lvl, scales = 'free') +
-  scale_y_log10() +
-  scale_x_log10()
+  facet_wrap(~quality.lvl, scales = 'free')
   
 sugar.chlorides+
   geom_jitter(aes(color=alcohol)) +
   scale_colour_gradient2(low="red", high="blue", midpoint=11) +
-  ggtitle("Chlorides by residual sugar and alcohol, log axes")
+  ggtitle("Chlorides by residual sugar and alcohol")
 
 ```
 
-We can see an upward trend and that low alcohol are most of the time in the upper left whereas higher alcohol wines are in the bottom right.
+We can see as before that the higher the quality, the more alcohol. Furthermore, low alcohol levels seems to have less sugar (we have cluster of red on the left of the plots and it seems to go bluer as residual.sugar increases). 
 
-```{r,warning=FALSE}
+```{r,echo=FALSE,warning=FALSE}
 with(red_wines_quant, cor(residual.sugar_chlorides, alcohol))
 with(subset(red_wines_quant, quality.lvl==5),
      cor(residual.sugar_chlorides, alcohol))
@@ -318,7 +501,15 @@ with(subset(red_wines_quant, quality.lvl==8),
      cor(residual.sugar_chlorides, alcohol))
 ```
 
-The correlation is medium low and does not seem to vary greatly between qualities.
+The correlation between residual.sugar_chlorides and alcohol for the subset is 0.257 which is medium. Breaking it up by quality we have:
+
+* 0.229 for quality 5
+* 0.219 for quality 6
+* 0.210 for quality 8
+
+So the correlation does not vary greatly between quality. We do not have a specific relationship for some qualities.
+
+***
 
 ###Acidity variables and quality
 Let's go back to our acidity variables:
@@ -344,29 +535,35 @@ ggplot_base_acidity +
 
 We can see that fixed acidity is not really relevant to quality, but volatile.acidity and citric acid are. The higher the citric acid level, the better the quality. The relation between volatile acidity and quality is the other way around. Futhermore, looking at the median we can see some group of qualities: 3 & 4, 5 & 6 and 7 & 8.
 
-```{r,warning=FALSE}
+```{r,echo=FALSE,warning=FALSE}
 with(red_wines, cor(quality, fixed.acidity))
 with(red_wines, cor(quality, volatile.acidity))
 with(red_wines, cor(quality, citric.acid))
 ```
 
-Correlation confirms that fixed acidity correlates only weakly with the quality.
-On the other hand, volatile acidity and citric acid are much stronger, especially volatile acidity. This kind of acidity correlate negatively with quality meaning that as the quality improves, the volatile acidity decreases.
+Correlation confirms that fixed acidity correlates only weakly with the quality (0.124).
+On the other hand, volatile acidity (-0.391) and citric acid (0.226) are much stronger, especially volatile acidity. This kind of acidity correlates negatively with quality meaning that as the quality improves, the volatile acidity decreases. The vinegar taste brought by volatile acidity is really hurting the quality.
 
 
 So we now have alcohol, citric acid and volatile acidity correlating quite strongly with quality.
 I will get back to the previous facetted chart of residual sugar and chlorides and add citric acid/volatile acidity to see if I can get some more information.
 
+***
+
 ###Chlorides, residual sugar and acidities by quality
 
 ```{r,echo=FALSE,warning=FALSE}
-#volatile acidity
 sugar.chlorides+
   geom_jitter(aes(color=volatile.acidity)) +
   scale_colour_gradient2(low="red", high="blue", midpoint=0.52) +
   ggtitle('Chlorides, residual sugar & volatile acidity facetted by quality')
 
-#citric acid
+with(red_wines_quant, cor(residual.sugar_chlorides, volatile.acidity))
+```
+
+Nothing specialfor volatile acidity which is confirmed by the really low correlation with residual.sugar_chlorides (-0.025).
+
+```{r,echo=FALSE,warning=FALSE}
 sugar.chlorides+
   geom_jitter(aes(color=citric.acid)) +
   scale_colour_gradient2(low="red", high="blue", midpoint=0.25) +
@@ -374,10 +571,9 @@ sugar.chlorides+
 
 ```
 
-Nothing for volatile acidity. But it seems that we get more citric acid the more residual sugar and chlorides in the wine.
+It seems that we get more citric acid the more residual sugar and chlorides in the wine.
 
-```{r,warning=FALSE}
-with(red_wines_quant, cor(residual.sugar_chlorides, volatile.acidity))
+```{r,echo=FALSE,warning=FALSE}
 with(red_wines_quant, cor(residual.sugar_chlorides, citric.acid))
 with(subset(red_wines_quant, quality.lvl==5),
      cor(residual.sugar_chlorides, citric.acid))
@@ -387,7 +583,13 @@ with(subset(red_wines_quant, quality.lvl==8),
      cor(residual.sugar_chlorides, citric.acid))
 ```
 
-Correlations show that there is in fact nothing in there.
+Correlations show that there is in fact nothing. The correaltion for our subset is 0.09. Breaking by quality: 
+
+* 0.029 for quality 5
+* 0.114 for quality 6
+* -0.02 for quality 8
+
+***
 
 ###Chlorides, residual sugar and density by quality
 Density is related to alcohol so let see if we can find something here.
@@ -396,13 +598,13 @@ Density is related to alcohol so let see if we can find something here.
 sugar.chlorides+
   geom_jitter(aes(color=density)) +
   scale_colour_gradient2(low="red", high="blue", midpoint=0.9975) +
-  ggtitle("Chlorides by residual sugar and density, log axes")
+  ggtitle("Chlorides by residual sugar and density")
 
 ```
 
 We get the same kind of graph than for alcohol with denser wines on the right of the graphs whereas less dense wines are in the left region. 
 
-```{r,warning=FALSE}
+```{r,echo=FALSE,warning=FALSE}
 with(red_wines_quant, cor(residual.sugar_chlorides, density))
 with(red_wines_quant, cor(residual.sugar_chlorides, alcohol))
 with(subset(red_wines_quant, quality.lvl==5),
@@ -412,7 +614,9 @@ with(subset(red_wines_quant, quality.lvl==5),
 
 ```
 
-Density relates less to the residual.sugar_chlorides ratio than alcohol.
+Density relates less to the residual.sugar_chlorides ratio than alcohol: 0.111 vs 0.256. We have the same phenomenom for quality 5: 0.190 for density vs 0.229 for alcohol.
+
+***
 
 ###Chlorides, residual sugar and sulphates by quality
 
@@ -423,18 +627,12 @@ sugar.chlorides+
               data = subset(red_wines, 
                             sulphates<quantile(red_wines$sulphates,0.95))) +
   scale_colour_gradient2(low="red", high="blue", midpoint=0.6) +
-  ggtitle("Chlorides by residual sugar and sulphates, log axes")
-
-#seems to have more sulphates for higher quality wines
-ggplot(aes(x = quality.lvl, y = sulphates), 
-       data = subset(red_wines, 
-                     sulphates<quantile(red_wines$sulphates,0.95))) +
-  geom_boxplot() +
-  ggtitle("Sulphates by quality, with sulphates<0.75)")
-
+  ggtitle("Chlorides by residual sugar and sulphates")
 ```
 
-```{r,warning=FALSE}
+There seems to be more sulphates for higher quality wines, but other than that, nothing with chlorides and residual.sugar.
+
+```{r,echo=FALSE,warning=FALSE}
 with(red_wines_quant, cor(residual.sugar_chlorides, sulphates))
 with(subset(red_wines_quant, quality.lvl==5),
      cor(residual.sugar_chlorides, sulphates))
@@ -444,14 +642,41 @@ with(subset(red_wines_quant, quality.lvl==8),
      cor(residual.sugar_chlorides, sulphates))
 ```
 
-The higher the quality, the more sulphates there is. Otherwise, no relation with chlorides and residual sugar. Correlations by quality are low and increases for quality 8 but this quality has only a few data points.
+The correlation confirms this impression with a correlation of 0.045 for the subset between residual.sugar_chlorides and sulphates. Breaking down by quality:
+
+* -0.036 for quality 5
+* 0.076 for quality 6
+* 0.0155 for quality 8
+
+Correlations by quality are low and increases for quality 8 but this quality has only a few data points.
+
+
+```{r,echo=FALSE,warning=FALSE}
+ggplot(aes(x = quality.lvl, y = sulphates), 
+       data = subset(red_wines, 
+                     sulphates<quantile(red_wines$sulphates,0.95))) +
+  geom_boxplot() +
+  ggtitle("Sulphates by quality, with sulphates<0.95)")
+
+```
+
+The boxplot shows that the higher the quality, the higher the sulphates.
+
+```{r,echo=FALSE,warning=FALSE}
+with(red_wines_quant, cor(quality, sulphates))
+
+```
+
+
+The higher the quality, the more sulphates there is. The correlation confirms this (0.374)
 
 Let's now look at sulfurs.
+
+***
 
 ###Chlorides, residual sugar and sulfurs by quality
 
 ```{r,echo=FALSE,warning=FALSE}
-summary(red_wines$free.sulfur.dioxide)
 #subset to filter outlier
       
 sugar.chlorides+
@@ -463,7 +688,7 @@ sugar.chlorides+
   ggtitle('chlorides by residual sugar & 
           free sulfur dioxide facetted by quality')
 
-summary(red_wines$total.sulfur.dioxide)
+
 #subset to filter outlier
 sugar.chlorides+
   geom_jitter(aes(color=total.sulfur.dioxide), 
@@ -474,12 +699,20 @@ sugar.chlorides+
   ggtitle('chlorides by residual sugar & total sulfur dioxide facetted by quality')
 ```
 
-```{r,warning=FALSE}
+Both plots have sulfur levels showing on all qualities and on all levels of residual.sugar and chlorides. I do not think there is any relationships between those variables.
+
+
+```{r,echo=FALSE,warning=FALSE}
 with(red_wines_quant, cor(residual.sugar_chlorides, free.sulfur.dioxide))
 with(red_wines_quant, cor(residual.sugar_chlorides, total.sulfur.dioxide))
 ```
 
-Sulfur variables do not correlate with chlorides and residual sugar.
+Correlation are really low: 
+
+* 0.003 between residual.sugar_chlorides and free.sulfur.dioxide
+* -0.049 between residual.sugar_chlorides and total.sulfur.dioxide
+
+***
 
 #Final Plots and Summary
 First of all, there are outliers in the dataset. I tried to remove them when their value seemed to really be out of range. But it might also underlines the diversity of wines. As I am not sure, the following graphs are based on the whole dataset.
@@ -490,7 +723,7 @@ All in all, there is not some really strong correlations between quality and the
 ```{r,echo=FALSE,warning=FALSE}
 
 ggplot(aes(x = volatile.acidity, fill=quality.lvl), data = red_wines) +
-  geom_density(aes(y=..scaled..)) +
+  geom_density(aes(y=..scaled..), alpha = 0.6) +
   scale_fill_brewer(type = 'seq', palette = 3) +
   labs(x = 'Volatile acidity (g / dm^3)', 
        y = 'Scaled density',  
@@ -500,7 +733,8 @@ ggplot(aes(x = volatile.acidity, fill=quality.lvl), data = red_wines) +
 ```  
   
 The density were scaled so that the low counts of the extreme quality do affect the overall distribution.
-As the quality of the wines get higher, the volatile acidity is getting lower. It is not always true. This is kind of what we can expect. When you buy cheap wine (which is not always, but most of the time of lower quality) it has most of the tume a pugent smell and taste, like vinegar.
+As the quality of the wines get higher, the volatile acidity is getting lower. The correlation is quite strong at -0.391. The negative sign signifies that the higher the volatile acidity (and hence the vinegar taste) the lower the quality.
+It is not always true. This is kind of what we can expect. When you buy cheap wine (which is not always, but most of the time of lower quality) it has most of the time a pugent smell and taste, like vinegar.
   
 ##But citric acid is the other way around
 
@@ -512,7 +746,8 @@ ggplot(aes(x = quality.lvl, y = citric.acid), data = red_wines) +
   ggtitle("Citric Acid by quality (red outliers)")
 ```
 
-This kind of acid add freshness and flavor. It is confirmed by the boxplot: lower quality wines have less citric acid in general than their higher contourparts. We can group quality into 3 supra group:
+This kind of acid add freshness and flavor. It is confirmed by the boxplot: lower quality wines have less citric acid in general than their higher contourparts. The correlation coefficient is at 0.226.
+We can group quality into 3 supra group:
 
 1. Quality 3 & 4: low citric acid median at `r with(subset(red_wines, red_wines$quality.lvl==3 | red_wines$quality.lvl==4), median(citric.acid))`
 2. Quality 5 & 6: median around `r with(subset(red_wines, red_wines$quality.lvl==5 | red_wines$quality.lvl==6), median(citric.acid))`
@@ -523,10 +758,12 @@ This kind of acid add freshness and flavor. It is confirmed by the boxplot: lowe
 ```{r,echo=FALSE,warning=FALSE}
 ggplot(aes(x = sulphates, y = alcohol, color = quality.lvl), 
        data = red_wines) +
-  stat_smooth(level=0.75) +
+  stat_smooth(aes(fill = quality.lvl),
+              level = 0.75, size = 1.2, alpha = 0.1) +
   coord_cartesian() +
   xlim(0.4,0.75) +
   ylim(6,15) +
+  scale_fill_brewer(type = 'seq', palette = 3, guide = FALSE) +
   scale_color_brewer(type = 'seq', palette = 3) +
   labs(x = 'Sulphates (g / dm3)', 
        y = 'Alcohol (%/volume)', 
@@ -534,7 +771,9 @@ ggplot(aes(x = sulphates, y = alcohol, color = quality.lvl),
   ggtitle("Alcohol by sulphates and quality (.75 confidence interval)")
 ```
 
-This graph shows smoothers of alcohol by sulphates for all quality. The low quality (3) wines vary a lot but the overal trend is that they are high in alcohol with low sulphates and the alcohol level decreases as the sulphates level increases. Qualities 4 to 7 are flat overall and the only differences come from the alcohol level.
+This graph shows smoothers of alcohol by sulphates for all quality. Quality and alcohol have a strong correlation at 0.476. The correlation between quality and sulphates is weaker at 0.251 but still present.  
+The low quality (3) wines vary a lot but the overal trend is that they are high in alcohol with low sulphates and the alcohol level decreases as the sulphates level increases. 
+Qualities 4 to 7 are flat overall and the only differences come from the alcohol level.  
 Quality 8 wines are peculiar in that they are grouped in the top right corner. The relationship is not flat like the other quality (except 3) but those  wines have more alcohol and more sulphates. 
 
 
